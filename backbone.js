@@ -1255,7 +1255,7 @@
         var hash = hashMatch? hashMatch[0].replace('#', '') : null;
         args.push(hash);
 
-        args[0] = args[0].replace(pathStripper, '');
+        args[0] = args[0] ? args[0].replace(pathStripper, '') : null;
 
         router.execute(callback, args);
         router.trigger.apply(router, ['route:' + name].concat(args));
