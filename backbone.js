@@ -1251,6 +1251,9 @@
       var router = this;
       Backbone.history.route(route, function(fragment) {
         var args = router._extractParameters(route, fragment);
+        var hashMatch = fragment.match(pathStripper);
+        var hash = hashMatch? hashMatch[0].replace('#', '') : null;
+        args.push(hash);
         router.execute(callback, args);
         router.trigger.apply(router, ['route:' + name].concat(args));
         router.trigger('route', name, args);
@@ -1370,7 +1373,7 @@
     getFragment: function(fragment, forcePushState) {
       if (fragment == null) {
         if (this._hasPushState || !this._wantsHashChange || forcePushState) {
-          fragment = decodeURI(this.location.pathname + this.location.search);
+          fragment = decodeURI(this.location.pathname + this.location.search + this.location.hash);
           var root = this.root.replace(trailingSlash, '');
           if (!fragment.indexOf(root)) fragment = fragment.slice(root.length);
         } else {
@@ -1495,13 +1498,17 @@
       if (!History.started) return false;
       if (!options || options === true) options = {trigger: !!options};
 
+      var hashMatch = fragment.match(pathStripper);
+      var hash = hashMatch ? hashMatch[0] : '';
       var url = this.root + (fragment = this.getFragment(fragment || ''));
-
-      // Strip the hash for matching.
-      fragment = fragment.replace(pathStripper, '');
+      var previousFragment = this.fragment.replace(pathStripper, '');
 
       if (this.fragment === fragment) return;
+      // Strip the hash for matching.
+      //fragment = fragment.replace(pathStripper, '');
       this.fragment = fragment;
+
+
 
       // Don't include a trailing slash on the root.
       if (fragment === '' && url !== '/') url = url.slice(0, -1);
@@ -1527,7 +1534,7 @@
       } else {
         return this.location.assign(url);
       }
-      if (options.trigger) return this.loadUrl(fragment);
+      if (options.trigger && previousFragment !== fragment) return this.loadUrl(fragment);
     },
 
     // Update the hash location, either replacing the current entry, or adding
