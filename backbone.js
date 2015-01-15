@@ -1254,6 +1254,9 @@
         var hashMatch = fragment.match(pathStripper);
         var hash = hashMatch? hashMatch[0].replace('#', '') : null;
         args.push(hash);
+
+        args[0] = args[0].replace(pathStripper, '');
+
         router.execute(callback, args);
         router.trigger.apply(router, ['route:' + name].concat(args));
         router.trigger('route', name, args);
@@ -1465,9 +1468,9 @@
     // Checks the current URL to see if it has changed, and if it has,
     // calls `loadUrl`, normalizing across the hidden iframe.
     checkUrl: function(e) {
-      var current = this.getFragment();
+      var current = this.getFragment().replace(pathStripper, '');
       if (current === this.fragment && this.iframe) {
-        current = this.getFragment(this.getHash(this.iframe));
+        current = this.getFragment(this.getHash(this.iframe)).replace(pathStripper, '');
       }
       if (current === this.fragment) return false;
       if (this.iframe) this.navigate(current);
@@ -1505,10 +1508,7 @@
 
       if (this.fragment === fragment) return;
       // Strip the hash for matching.
-      //fragment = fragment.replace(pathStripper, '');
-      this.fragment = fragment;
-
-
+      this.fragment = fragment.replace(pathStripper, '');
 
       // Don't include a trailing slash on the root.
       if (fragment === '' && url !== '/') url = url.slice(0, -1);
