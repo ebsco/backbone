@@ -1468,13 +1468,19 @@
     // Checks the current URL to see if it has changed, and if it has,
     // calls `loadUrl`, normalizing across the hidden iframe.
     checkUrl: function(e) {
-      var current = this.getFragment().replace(pathStripper, '');
+      var current = this.getFragment();
+
       if (current === this.fragment && this.iframe) {
-        current = this.getFragment(this.getHash(this.iframe)).replace(pathStripper, '');
+        current = this.getFragment(this.getHash(this.iframe));
       }
+
+      var currentBase = current.replace(pathStripper, '');
+      var previousBase = this.fragment ? this.fragment.replace(pathStripper, '') : null;
+
       if (current === this.fragment) return false;
+
       if (this.iframe) this.navigate(current);
-      this.loadUrl();
+      if (currentBase !== previousBase) this.loadUrl();
     },
 
     // Attempt to load the current URL fragment. If a route succeeds with a
@@ -1504,11 +1510,10 @@
       var hashMatch = fragment.match(pathStripper);
       var hash = hashMatch ? hashMatch[0] : '';
       var url = this.root + (fragment = this.getFragment(fragment || ''));
-      var previousFragment = this.fragment.replace(pathStripper, '');
+      var previousFragment = this.fragment ? this.fragment.replace(pathStripper, '') : this.fragment;
 
       if (this.fragment === fragment) return;
-      // Strip the hash for matching.
-      this.fragment = fragment.replace(pathStripper, '');
+      this.fragment = fragment;
 
       // Don't include a trailing slash on the root.
       if (fragment === '' && url !== '/') url = url.slice(0, -1);
