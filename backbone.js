@@ -1257,6 +1257,9 @@
 
         args[0] = args[0] ? args[0].replace(pathStripper, '') : null;
 
+        // somewhat hacky way of removing section hash from query params argument
+        args[1] = args[1] ? args[1].replace(pathStripper, '') : null;
+
         router.execute(callback, args);
         router.trigger.apply(router, ['route:' + name].concat(args));
         router.trigger('route', name, args);
