@@ -1255,6 +1255,7 @@
         var hash = hashMatch? hashMatch[0].replace('#', '') : null;
         args.push(hash);
 
+        // somewhat hacky way of removing section hash from route argument
         args[0] = args[0] ? args[0].replace(pathStripper, '') : null;
 
         // somewhat hacky way of removing section hash from query params argument
