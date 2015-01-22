@@ -378,13 +378,13 @@
     equal(router.charType, 'escaped');
   });
 
-  test("#1185 - Use pathname when hashChange is not wanted.", 1, function() {
+  test("#1185 - Include pathname when hashChange is not wanted.", 1, function() {
     Backbone.history.stop();
     location.replace('http://example.com/path/name#hash');
     Backbone.history = _.extend(new Backbone.History, {location: location});
     Backbone.history.start({hashChange: false});
     var fragment = Backbone.history.getFragment();
-    strictEqual(fragment, location.pathname.replace(/^\//, ''));
+    strictEqual(fragment, location.pathname.replace(/^\//, '') + '#hash');
   });
 
   test("#1206 - Strip leading slash before location.assign.", 1, function() {
@@ -609,7 +609,7 @@
   test("#2062 - Trigger 'route' event on router instance.", 2, function() {
     router.on('route', function(name, args) {
       strictEqual(name, 'routeEvent');
-      deepEqual(args, ['x', null]);
+      deepEqual(args, ['x', null, null]);
     });
     location.replace('http://example.com#route-event/x');
     Backbone.history.checkUrl();

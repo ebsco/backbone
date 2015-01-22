@@ -1253,13 +1253,17 @@
         var args = router._extractParameters(route, fragment);
         var hashMatch = fragment.match(pathStripper);
         var hash = hashMatch? hashMatch[0].replace('#', '') : null;
-        args.push(hash);
 
-        // somewhat hacky way of removing section hash from route argument
-        args[0] = args[0] ? args[0].replace(pathStripper, '') : null;
+        // somewhat hacky way of removing section hash from route arguments
+        _.map(_.initial(args), function (arg) {
+          return arg ? arg.replace(pathStripper, '') : null;
+        });
 
         // somewhat hacky way of removing section hash from query params argument
-        args[1] = args[1] ? args[1].replace(pathStripper, '') : null;
+        var queryParams = _.last(args);
+        args[args.length -1] = queryParams ? queryParams.replace(pathStripper, '') : null;
+
+        args.push(hash);
 
         router.execute(callback, args);
         router.trigger.apply(router, ['route:' + name].concat(args));
