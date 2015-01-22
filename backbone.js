@@ -1254,10 +1254,10 @@
         var hashMatch = fragment.match(pathStripper);
         var hash = hashMatch? hashMatch[0].replace('#', '') : null;
 
-        // somewhat hacky way of removing section hash from route arguments
-        _.map(_.initial(args), function (arg) {
-          return arg ? arg.replace(pathStripper, '') : null;
-        });
+        // somewhat hacky way of removing section hash from last route arguments
+        var lastRouteIndex = args.length -2;
+        var lastRouteArg = args[lastRouteIndex];
+        args[lastRouteIndex] = lastRouteArg ? lastRouteArg.replace(pathStripper, '') : null;
 
         // somewhat hacky way of removing section hash from query params argument
         var queryParams = _.last(args);
