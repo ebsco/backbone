@@ -378,13 +378,13 @@
     equal(router.charType, 'escaped');
   });
 
-  test("#1185 - Use pathname when hashChange is not wanted.", 1, function() {
+  test("#1185 - Include pathname when hashChange is not wanted.", 1, function() {
     Backbone.history.stop();
     location.replace('http://example.com/path/name#hash');
     Backbone.history = _.extend(new Backbone.History, {location: location});
     Backbone.history.start({hashChange: false});
     var fragment = Backbone.history.getFragment();
-    strictEqual(fragment, location.pathname.replace(/^\//, ''));
+    strictEqual(fragment, location.pathname.replace(/^\//, '') + '#hash');
   });
 
   test("#1206 - Strip leading slash before location.assign.", 1, function() {
@@ -447,13 +447,13 @@
 
   test("Normalize root.", 1, function() {
     Backbone.history.stop();
-    location.replace('http://example.com/root#fragment');
+    location.replace('http://example.com/root#fragment#hash');
     Backbone.history = _.extend(new Backbone.History, {
       location: location,
       history: {
         pushState: function(state, title, url) {},
         replaceState: function(state, title, url) {
-          strictEqual(url, '/root/fragment');
+          strictEqual(url, '/root/fragment#hash');
         }
       }
     });
@@ -490,13 +490,13 @@
 
   test("Transition from hashChange to pushState.", 1, function() {
     Backbone.history.stop();
-    location.replace('http://example.com/root#x/y');
+    location.replace('http://example.com/root#x/y?a=b#hash');
     Backbone.history = _.extend(new Backbone.History, {
       location: location,
       history: {
         pushState: function(){},
         replaceState: function(state, title, url){
-          strictEqual(url, '/root/x/y');
+          strictEqual(url, '/root/x/y?a=b#hash');
         }
       }
     });
@@ -541,9 +541,9 @@
 
   test("Transition from pushState to hashChange.", 1, function() {
     Backbone.history.stop();
-    location.replace('http://example.com/root/x/y?a=b');
+    location.replace('http://example.com/root/x/y?a=b#hash');
     location.replace = function(url) {
-      strictEqual(url, '/root/#x/y?a=b');
+      strictEqual(url, '/root/#x/y?a=b#hash');
     };
     Backbone.history = _.extend(new Backbone.History, {
       location: location,
@@ -609,7 +609,7 @@
   test("#2062 - Trigger 'route' event on router instance.", 2, function() {
     router.on('route', function(name, args) {
       strictEqual(name, 'routeEvent');
-      deepEqual(args, ['x', null]);
+      deepEqual(args, ['x', null, null]);
     });
     location.replace('http://example.com#route-event/x');
     Backbone.history.checkUrl();
@@ -752,8 +752,9 @@
     Backbone.history.start({pushState: true});
     var Router = Backbone.Router.extend({
       routes: {
-        path: function(params) {
+        path: function(params, hash) {
           strictEqual(params, 'x=y');
+          strictEqual(hash, 'hash');
         }
       }
     });
@@ -768,8 +769,9 @@
     Backbone.history.start({pushState: true});
     var Router = Backbone.Router.extend({
       routes: {
-        path: function(params) {
+        path: function(params, hash) {
           strictEqual(params, 'x=y');
+          strictEqual(hash, 'hash');
         }
       }
     });

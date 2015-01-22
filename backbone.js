@@ -1251,6 +1251,20 @@
       var router = this;
       Backbone.history.route(route, function(fragment) {
         var args = router._extractParameters(route, fragment);
+        var hashMatch = fragment.match(pathStripper);
+        var hash = hashMatch? hashMatch[0].replace('#', '') : null;
+
+        // somewhat hacky way of removing section hash from last route arguments
+        var lastRouteIndex = args.length -2;
+        var lastRouteArg = args[lastRouteIndex];
+        args[lastRouteIndex] = lastRouteArg ? lastRouteArg.replace(pathStripper, '') : null;
+
+        // somewhat hacky way of removing section hash from query params argument
+        var queryParams = _.last(args);
+        args[args.length -1] = queryParams ? queryParams.replace(pathStripper, '') : null;
+
+        args.push(hash);
+
         router.execute(callback, args);
         router.trigger.apply(router, ['route:' + name].concat(args));
         router.trigger('route', name, args);
@@ -1370,7 +1384,7 @@
     getFragment: function(fragment, forcePushState) {
       if (fragment == null) {
         if (this._hasPushState || !this._wantsHashChange || forcePushState) {
-          fragment = decodeURI(this.location.pathname + this.location.search);
+          fragment = decodeURI(this.location.pathname + this.location.search + this.location.hash);
           var root = this.root.replace(trailingSlash, '');
           if (!fragment.indexOf(root)) fragment = fragment.slice(root.length);
         } else {
@@ -1427,7 +1441,7 @@
 
         // If we've started off with a route from a `pushState`-enabled
         // browser, but we're currently in a browser that doesn't support it...
-        if (!this._hasPushState && !this.atRoot()) {
+        if (!this._hasPushState && (!this.atRoot() || this.location.search)) {
           this.fragment = this.getFragment(null, true);
           this.location.replace(this.root + '#' + this.fragment);
           // Return immediately as browser will do redirect to new url
@@ -1463,12 +1477,18 @@
     // calls `loadUrl`, normalizing across the hidden iframe.
     checkUrl: function(e) {
       var current = this.getFragment();
+
       if (current === this.fragment && this.iframe) {
         current = this.getFragment(this.getHash(this.iframe));
       }
+
+      var currentBase = current.replace(pathStripper, '');
+      var previousBase = this.fragment ? this.fragment.replace(pathStripper, '') : null;
+
       if (current === this.fragment) return false;
+
       if (this.iframe) this.navigate(current);
-      this.loadUrl();
+      if (currentBase !== previousBase) this.loadUrl();
     },
 
     // Attempt to load the current URL fragment. If a route succeeds with a
@@ -1495,10 +1515,10 @@
       if (!History.started) return false;
       if (!options || options === true) options = {trigger: !!options};
 
+      var hashMatch = fragment.match(pathStripper);
+      var hash = hashMatch ? hashMatch[0] : '';
       var url = this.root + (fragment = this.getFragment(fragment || ''));
-
-      // Strip the hash for matching.
-      fragment = fragment.replace(pathStripper, '');
+      var previousFragment = this.fragment ? this.fragment.replace(pathStripper, '') : this.fragment;
 
       if (this.fragment === fragment) return;
       this.fragment = fragment;
@@ -1527,7 +1547,7 @@
       } else {
         return this.location.assign(url);
       }
-      if (options.trigger) return this.loadUrl(fragment);
+      if (options.trigger && previousFragment !== fragment) return this.loadUrl(fragment);
     },
 
     // Update the hash location, either replacing the current entry, or adding
