@@ -330,10 +330,10 @@
       this._changing  = true;
 
       if (!changing) {
-        this._previousAttributes = _.clone(this.attributes);
+        //this._previousAttributes = _.clone(this.attributes);
         this.changed = {};
       }
-      current = this.attributes, prev = this._previousAttributes;
+      current = this.attributes, prev = this.attributes;
 
       // Check for changes of `id`.
       if (this.idAttribute in attrs) this.id = attrs[this.idAttribute];
@@ -341,8 +341,8 @@
       // For each `set` attribute, update or delete the current value.
       for (attr in attrs) {
         val = attrs[attr];
-        if (!_.isEqual(current[attr], val)) changes.push(attr);
-        if (!_.isEqual(prev[attr], val)) {
+        if (current[attr] !== val) changes.push(attr);
+        if (prev[attr] !== val) {
           this.changed[attr] = val;
         } else {
           delete this.changed[attr];
@@ -400,11 +400,11 @@
     // You can also pass an attributes object to diff against the model,
     // determining if there *would be* a change.
     changedAttributes: function(diff) {
-      if (!diff) return this.hasChanged() ? _.clone(this.changed) : false;
+      if (!diff) return this.hasChanged() ? this.changed : false;
       var val, changed = false;
-      var old = this._changing ? this._previousAttributes : this.attributes;
+      var old = this.attributes;
       for (var attr in diff) {
-        if (_.isEqual(old[attr], (val = diff[attr]))) continue;
+        if (old[attr] === (val = diff[attr])) continue;
         (changed || (changed = {}))[attr] = val;
       }
       return changed;
