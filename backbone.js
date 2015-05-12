@@ -330,7 +330,6 @@
       this._changing  = true;
 
       if (!changing) {
-        //this._previousAttributes = _.clone(this.attributes);
         this.changed = {};
       }
       current = this.attributes, prev = this.attributes;
@@ -608,7 +607,6 @@
   };
 
   // Default options for `Collection#set`.
-  var setOptions = {add: true, remove: true, merge: true};
   var addOptions = {add: true, remove: false};
 
   // Define the Collection's inheritable methods.
@@ -666,7 +664,7 @@
     // already exist in the collection, as necessary. Similar to **Model#set**,
     // the core operation for updating the data contained by the collection.
     set: function(models, options) {
-      options = _.defaults({}, options, setOptions);
+      options = _.extend({add: true, remove: true, merge: true}, options);
       if (options.parse) models = this.parse(models, options);
       var singular = !_.isArray(models);
       models = singular ? (models ? [models] : []) : _.clone(models);
