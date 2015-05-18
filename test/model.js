@@ -251,14 +251,16 @@
   });
 
   test("set falsy values in the correct order", 2, function() {
-    var model = new Backbone.Model({result: 'result'});
+    var model = new Backbone.Model({result: 'result'}),
+      previousValue;
     model.on('change', function() {
       equal(model.changed.result, void 0);
-      equal(model.previous('result'), false);
+      equal(previousValue, false);
     });
     model.set({result: void 0}, {silent: true});
     model.set({result: null}, {silent: true});
     model.set({result: false}, {silent: true});
+    previousValue = model.get('result');
     model.set({result: void 0});
   });
 
@@ -318,7 +320,7 @@
     equal(model.get('name'), '');
   });
 
-  test("setting an object", 1, function() {
+  test("setting an object", 2, function() {
     var model = new Backbone.Model({
       custom: { foo: 1 }
     });
@@ -326,7 +328,7 @@
       ok(1);
     });
     model.set({
-      custom: { foo: 1 } // no change should be fired
+      custom: { foo: 1 } // change event should be fired
     });
     model.set({
       custom: { foo: 2 } // change event should be fired
@@ -369,15 +371,13 @@
     equal(model.get('two'), 4);
   });
 
-  test("change, hasChanged, changedAttributes, previous, previousAttributes", 9, function() {
+  test("change, hasChanged, changedAttributes, previous, previousAttributes", 7, function() {
     var model = new Backbone.Model({name: "Tim", age: 10});
     deepEqual(model.changedAttributes(), false);
     model.on('change', function() {
       ok(model.hasChanged('name'), 'name changed');
       ok(!model.hasChanged('age'), 'age did not');
       ok(_.isEqual(model.changedAttributes(), {name : 'Rob'}), 'changedAttributes returns the changed attrs');
-      equal(model.previous('name'), 'Tim');
-      ok(_.isEqual(model.previousAttributes(), {name : "Tim", age : 10}), 'previousAttributes is correct');
     });
     equal(model.hasChanged(), false);
     equal(model.hasChanged(undefined), false);
@@ -618,15 +618,18 @@
   });
 
   test("Nested change events don't clobber previous attributes", 4, function() {
-    new Backbone.Model()
+    var model = new Backbone.Model();
+    var initialState = model.get('state');
+
+    model
     .on('change:state', function(model, newState) {
-      equal(model.previous('state'), undefined);
+      equal(initialState, undefined);
       equal(newState, 'hello');
       // Fire a nested change event.
       model.set({other: 'whatever'});
     })
     .on('change:state', function(model, newState) {
-      equal(model.previous('state'), undefined);
+      equal(initialState, undefined);
       equal(newState, 'hello');
     })
     .set({state: 'hello'});
@@ -747,13 +750,6 @@
     ok(!model.hasChanged(''));
   });
 
-  test("`previous` for falsey keys", 2, function() {
-    var model = new Backbone.Model({0: true, '': true});
-    model.set({0: false, '': false}, {silent: true});
-    equal(model.previous(0), true);
-    equal(model.previous(''), true);
-  });
-
   test("`save` with `wait` sends correct attributes", 5, function() {
     var changed = 0;
     var model = new Backbone.Model({x: 1, y: 2});
@@ -828,21 +824,24 @@
   test("nested `set` during `'change'`", 6, function() {
     var count = 0;
     var model = new Backbone.Model();
+    var previousValue = model.get('x');
     model.on('change', function() {
       switch(count++) {
         case 0:
           deepEqual(this.changedAttributes(), {x: true});
-          equal(model.previous('x'), undefined);
+          equal(previousValue, undefined);
+          previousValue = model.get('y');
           model.set({y: true});
           break;
         case 1:
           deepEqual(this.changedAttributes(), {x: true, y: true});
-          equal(model.previous('x'), undefined);
+          equal(previousValue, undefined);
+          previusValue = model.get('z');
           model.set({z: true});
           break;
         case 2:
           deepEqual(this.changedAttributes(), {x: true, y: true, z: true});
-          equal(model.previous('y'), undefined);
+          equal(previousValue, undefined);
           break;
         default:
           ok(false);
@@ -1060,9 +1059,10 @@
     deepEqual(changes, ['a', 'a']);
   });
 
-  test("#1943 change calculations should use _.isEqual", function() {
-    var model = new Backbone.Model({a: {key: 'value'}});
-    model.set('a', {key:'value'}, {silent:true});
+  test("#1943 change calculations should use simple equality", function() {
+    var value = {key: 'value'};
+    var model = new Backbone.Model({a: value});
+    model.set('a', value, {silent:true});
     equal(model.changedAttributes(), false);
   });
 
