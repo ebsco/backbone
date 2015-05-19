@@ -401,9 +401,9 @@
     changedAttributes: function(diff) {
       if (!diff) return this.hasChanged() ? this.changed : false;
       var val, changed = false;
-      var old = this.attributes;
       for (var attr in diff) {
-        if (old[attr] === (val = diff[attr])) continue;
+        val = diff[attr];
+        if (this.attributes[attr] === val && !(attr in this.changed)) continue;
         (changed || (changed = {}))[attr] = val;
       }
       return changed;

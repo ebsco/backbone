@@ -371,7 +371,7 @@
     equal(model.get('two'), 4);
   });
 
-  test("change, hasChanged, changedAttributes, previous, previousAttributes", 7, function() {
+  test("change, hasChanged, changedAttributes", 7, function() {
     var model = new Backbone.Model({name: "Tim", age: 10});
     deepEqual(model.changedAttributes(), false);
     model.on('change', function() {
@@ -385,11 +385,14 @@
     equal(model.get('name'), 'Rob');
   });
 
-  test("changedAttributes", 3, function() {
+  test("changedAttributes", 4, function() {
     var model = new Backbone.Model({a: 'a', b: 'b'});
     deepEqual(model.changedAttributes(), false);
     equal(model.changedAttributes({a: 'a'}), false);
     equal(model.changedAttributes({a: 'b'}).a, 'b');
+    
+    model.set('b', 'c');
+    deepEqual(model.changedAttributes({b: 'c'}), {b: 'c'});
   });
 
   test("change with options", 2, function() {
