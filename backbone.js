@@ -335,7 +335,10 @@
       current = this.attributes, prev = this.attributes;
 
       // Check for changes of `id`.
-      if (this.idAttribute in attrs) this.id = attrs[this.idAttribute];
+      if (this.idAttribute in attrs) {
+        this.previousId = this.id;
+        this.id = attrs[this.idAttribute];
+      }
 
       // For each `set` attribute, update or delete the current value.
       for (attr in attrs) {
@@ -925,6 +928,7 @@
       if ((event === 'add' || event === 'remove') && collection !== this) return;
       if (event === 'destroy') this.remove(model, options);
       if (model && event === 'change:' + model.idAttribute) {
+        delete this._byId[model.previousId];
         if (model.id != null) this._byId[model.id] = model;
       }
       this.trigger.apply(this, arguments);

@@ -90,6 +90,20 @@
     equal(collection.get(1).id, 1);
   }),
 
+  test("update index when id changes", 4, function() {
+    var col = new Backbone.Collection();
+    col.add([
+      {id : 0, name : 'one'},
+      {id : 1, name : 'two'}
+    ]);
+    var one = col.get(0);
+    equal(one.get('name'), 'one');
+    col.on('change:name', function (model) { ok(this.get(model)); });
+    one.set({name: 'dalmatians', id : 101});
+    equal(col.get(0), null);
+    equal(col.get(101).get('name'), 'dalmatians');
+  });
+
   test("at", 1, function() {
     equal(col.at(2), c);
   });
