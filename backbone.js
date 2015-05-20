@@ -330,10 +330,9 @@
       this._changing  = true;
 
       if (!changing) {
-        this._previousAttributes = _.clone(this.attributes);
         this.changed = {};
       }
-      current = this.attributes, prev = this._previousAttributes;
+      current = this.attributes, prev = this.attributes;
 
       // Check for changes of `id`.
       if (this.idAttribute in attrs) this.id = attrs[this.idAttribute];
@@ -341,8 +340,8 @@
       // For each `set` attribute, update or delete the current value.
       for (attr in attrs) {
         val = attrs[attr];
-        if (!_.isEqual(current[attr], val)) changes.push(attr);
-        if (!_.isEqual(prev[attr], val)) {
+        if (current[attr] !== val) changes.push(attr);
+        if (prev[attr] !== val) {
           this.changed[attr] = val;
         } else {
           delete this.changed[attr];
@@ -400,27 +399,14 @@
     // You can also pass an attributes object to diff against the model,
     // determining if there *would be* a change.
     changedAttributes: function(diff) {
-      if (!diff) return this.hasChanged() ? _.clone(this.changed) : false;
+      if (!diff) return this.hasChanged() ? this.changed : false;
       var val, changed = false;
-      var old = this._changing ? this._previousAttributes : this.attributes;
       for (var attr in diff) {
-        if (_.isEqual(old[attr], (val = diff[attr]))) continue;
+        val = diff[attr];
+        if (this.attributes[attr] === val && !(attr in this.changed)) continue;
         (changed || (changed = {}))[attr] = val;
       }
       return changed;
-    },
-
-    // Get the previous value of an attribute, recorded at the time the last
-    // `"change"` event was fired.
-    previous: function(attr) {
-      if (attr == null || !this._previousAttributes) return null;
-      return this._previousAttributes[attr];
-    },
-
-    // Get all of the attributes of the model at the time of the previous
-    // `"change"` event.
-    previousAttributes: function() {
-      return _.clone(this._previousAttributes);
     },
 
     // Fetch the model from the server. If the server's representation of the
@@ -608,7 +594,6 @@
   };
 
   // Default options for `Collection#set`.
-  var setOptions = {add: true, remove: true, merge: true};
   var addOptions = {add: true, remove: false};
 
   // Define the Collection's inheritable methods.
@@ -666,7 +651,7 @@
     // already exist in the collection, as necessary. Similar to **Model#set**,
     // the core operation for updating the data contained by the collection.
     set: function(models, options) {
-      options = _.defaults({}, options, setOptions);
+      options = _.extend({add: true, remove: true, merge: true}, options);
       if (options.parse) models = this.parse(models, options);
       var singular = !_.isArray(models);
       models = singular ? (models ? [models] : []) : _.clone(models);
@@ -940,7 +925,6 @@
       if ((event === 'add' || event === 'remove') && collection !== this) return;
       if (event === 'destroy') this.remove(model, options);
       if (model && event === 'change:' + model.idAttribute) {
-        delete this._byId[model.previous(model.idAttribute)];
         if (model.id != null) this._byId[model.id] = model;
       }
       this.trigger.apply(this, arguments);
