@@ -183,31 +183,31 @@
   test("routes (simple)", 4, function() {
     location.replace('http://example.com#search/news');
     Backbone.history.checkUrl();
-    equal(router.query, 'news');
+    equal(router.query, 'search/news');
     equal(router.page, void 0);
     equal(lastRoute, 'search');
-    equal(lastArgs[0], 'news');
+    equal(lastArgs[0], 'search/news');
   });
 
   test("routes (simple, but unicode)", 4, function() {
     location.replace('http://example.com#search/тест');
     Backbone.history.checkUrl();
-    equal(router.query, "тест");
+    equal(router.query, "search/тест");
     equal(router.page, void 0);
     equal(lastRoute, 'search');
-    equal(lastArgs[0], "тест");
+    equal(lastArgs[0], "search/тест");
   });
 
   test("routes (two part)", 2, function() {
     location.replace('http://example.com#search/nyc/p10');
     Backbone.history.checkUrl();
-    equal(router.query, 'nyc');
+    equal(router.query, 'search/nyc/p10');
     equal(router.page, '10');
   });
 
   test("routes via navigate", 2, function() {
     Backbone.history.navigate('search/manhattan/p20', {trigger: true});
-    equal(router.query, 'manhattan');
+    equal(router.query, 'search/manhattan/p20');
     equal(router.page, '20');
   });
 
@@ -218,7 +218,7 @@
 
   test("routes via navigate for backwards-compatibility", 2, function() {
     Backbone.history.navigate('search/manhattan/p20', true);
-    equal(router.query, 'manhattan');
+    equal(router.query, 'search/manhattan/p20');
     equal(router.page, '20');
   });
 
@@ -264,13 +264,13 @@
   test("routes (splats)", 1, function() {
     location.replace('http://example.com#splat/long-list/of/splatted_99args/end');
     Backbone.history.checkUrl();
-    equal(router.args, 'long-list/of/splatted_99args');
+    equal(router.args, 'splat/long-list/of/splatted_99args/end');
   });
 
   test("routes (github)", 3, function() {
     location.replace('http://example.com#backbone/compare/1.0...braddunbar:with/slash');
     Backbone.history.checkUrl();
-    equal(router.repo, 'backbone');
+    equal(router.repo, 'backbone/compare/1.0...braddunbar:with/slash');
     equal(router.from, '1.0');
     equal(router.to, 'braddunbar:with/slash');
   });
@@ -278,16 +278,16 @@
   test("routes (optional)", 2, function() {
     location.replace('http://example.com#optional');
     Backbone.history.checkUrl();
-    ok(!router.arg);
+    ok(router.arg);
     location.replace('http://example.com#optional/thing');
     Backbone.history.checkUrl();
-    equal(router.arg, 'thing');
+    equal(router.arg, 'optional/thing');
   });
 
   test("routes (complex)", 3, function() {
     location.replace('http://example.com#one/two/three/complex-part/four/five/six/seven');
     Backbone.history.checkUrl();
-    equal(router.first, 'one/two/three');
+    equal(router.first, 'one/two/three/complex-part/four/five/six/seven');
     equal(router.part, 'part');
     equal(router.rest, 'four/five/six/seven');
   });
@@ -295,10 +295,10 @@
   test("routes (query)", 5, function() {
     location.replace('http://example.com#query/mandel?a=b&c=d');
     Backbone.history.checkUrl();
-    equal(router.entity, 'mandel');
+    equal(router.entity, 'query/mandel?a=b&c=d');
     equal(router.queryArgs, 'a=b&c=d');
     equal(lastRoute, 'query');
-    equal(lastArgs[0], 'mandel');
+    equal(lastArgs[0], 'query/mandel?a=b&c=d');
     equal(lastArgs[1], 'a=b&c=d');
   });
 
@@ -315,13 +315,13 @@
     equal(ExternalObject.value, 'unset');
     location.replace('http://example.com#function/set');
     Backbone.history.checkUrl();
-    equal(ExternalObject.value, 'set');
+    equal(ExternalObject.value, 'function/set');
   });
 
   test("Decode named parameters, not splats.", 2, function() {
     location.replace('http://example.com#decode/a%2Fb/c%2Fd/e');
     Backbone.history.checkUrl();
-    strictEqual(router.named, 'a/b');
+    strictEqual(router.named, 'decode/a%2Fb/c%2Fd/e');
     strictEqual(router.path, 'c/d/e');
   });
 
@@ -356,7 +356,7 @@
   test("#967 - Route callback gets passed encoded values.", 3, function() {
     var route = 'has%2Fslash/complex-has%23hash/has%20space';
     Backbone.history.navigate(route, {trigger: true});
-    strictEqual(router.first, 'has/slash');
+    strictEqual(router.first, 'has%2Fslash/complex-has%23hash/has%20space');
     strictEqual(router.part, 'has#hash');
     strictEqual(router.rest, 'has space');
   });
@@ -366,7 +366,7 @@
     Backbone.history.checkUrl();
     location.replace('http://example.com#search/fat');
     Backbone.history.checkUrl();
-    equal(router.query, 'fat');
+    equal(router.query, 'search/fat');
     equal(router.page, void 0);
     equal(lastRoute, 'search');
   });
@@ -603,13 +603,13 @@
     strictEqual(router.z, undefined);
     location.replace('http://example.com#named/optional/y123');
     Backbone.history.checkUrl();
-    strictEqual(router.z, '123');
+    strictEqual(router.z, 'named/optional/y123');
   });
 
   test("#2062 - Trigger 'route' event on router instance.", 2, function() {
     router.on('route', function(name, args) {
       strictEqual(name, 'routeEvent');
-      deepEqual(args, ['x', null, null]);
+      deepEqual(args, ['route-event/x', null, null]);
     });
     location.replace('http://example.com#route-event/x');
     Backbone.history.checkUrl();
@@ -738,7 +738,7 @@
     var Router = Backbone.Router.extend({
       routes: {
         path: function(params){
-          strictEqual(params, 'x=y%20z');
+          strictEqual(params, 'path?x=y%20z');
         }
       }
     });
@@ -753,7 +753,7 @@
     var Router = Backbone.Router.extend({
       routes: {
         path: function(params, hash) {
-          strictEqual(params, 'x=y');
+          strictEqual(params, 'path?x=y');
           strictEqual(hash, 'hash');
         }
       }
@@ -770,7 +770,7 @@
     var Router = Backbone.Router.extend({
       routes: {
         path: function(params, hash) {
-          strictEqual(params, 'x=y');
+          strictEqual(params, 'path?x=y');
           strictEqual(hash, 'hash');
         }
       }
