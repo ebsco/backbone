@@ -1239,6 +1239,10 @@
       var router = this;
       Backbone.history.route(route, function(fragment) {
         var args = router._extractParameters(route, fragment);
+
+        // somewhat hacky way to get the fragment passed into the route callback
+        args[0] = fragment;
+
         var hashMatch = fragment.match(pathStripper);
         var hash = hashMatch? hashMatch[0].replace('#', '') : null;
 
